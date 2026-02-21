@@ -1,0 +1,46 @@
+# Configuración de YOLOv9 para Frigate
+
+Has compilado con éxito tres variantes del modelo **YOLOv9** a formato ONNX.
+
+## Ubicación de los archivos
+- **YOLOv9-E (Extended/Power):** `/home/mirasu/yolov9-p.onnx` (265 MB) - *Máxima precisión*
+- **YOLOv9-S (Small):** `/home/mirasu/yolov9-s.onnx` (39 MB) - *Equilibrio*
+- **YOLOv9-T (Tiny):** `/home/mirasu/yolov9-t.onnx` (9 MB) - *Máxima velocidad*
+
+## Integración en Frigate (`config.yml`)
+
+Elige el modelo según tu hardware. El modelo **Tiny** es excelente para CPUs poco potentes, mientras que el **Extended (p)** es ideal si tienes un procesador moderno o iGPU.
+
+### Ejemplo de configuración
+```yaml
+detectors:
+  ov:
+    type: openvino
+    device: AUTO
+
+model:
+  path: /config/model_cache/yolov9-s.onnx # Cambia a -p o -t según prefieras
+  input_tensor: nchw
+  input_pixel_format: rgb
+  width: 640
+  height: 640
+  labelmap_path: /config/model_cache/coco_labels.txt
+```
+
+### Diferencias de rendimiento
+- **Tiny (t):** Muy bajo consumo de CPU, ideal para muchas cámaras.
+- **Small (s):** Buen punto medio para detección de personas/objetos pequeños.
+- **Extended (p):** Pesado, pero con la mejor detección disponible en YOLOv9.
+
+
+### Notas Importantes
+1. **Labels:** YOLOv9 usa las 80 clases de COCO. Si no tienes el archivo de etiquetas, puedes crearlo con la lista estándar de COCO (person, bicycle, car, motorcyle, etc.).
+2. **Dimensiones:** El modelo se exportó con una resolución de **640x640**. Asegúrate de que coincida en la configuración.
+3. **Rutas:** Recuerda mapear el volumen en Docker para que Frigate vea el archivo `.onnx` (ejemplo: `-v /home/mirasu/yolov9-p.onnx:/config/model_cache/yolov9-p.onnx:ro`).
+
+### Conversión a TensorRT (.engine)
+Si decides usar una GPU Nvidia, puedes convertir el ONNX a un engine optimizado usando el script proporcionado:
+```bash
+python3 /workspace/convert_onnx_to_trt.py --onnx /home/mirasu/yolov9-p.onnx --output /home/mirasu/yolov9-p.engine
+```
+Y luego cambia el detector en Frigate a `tensorrt`.
