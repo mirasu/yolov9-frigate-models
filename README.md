@@ -44,3 +44,33 @@ Si decides usar una GPU Nvidia, puedes convertir el ONNX a un engine optimizado 
 python3 /workspace/convert_onnx_to_trt.py --onnx /home/mirasu/yolov9-p.onnx --output /home/mirasu/yolov9-p.engine
 ```
 Y luego cambia el detector en Frigate a `tensorrt`.
+
+---
+
+## 🐳 Uso con Docker
+
+Si prefieres usar la imagen Docker para distribuir o servir los modelos, sigue estos pasos:
+
+### 1. Construir la imagen
+Desde la raíz del repositorio:
+```bash
+docker build -t yolov9-models-frigate:latest .
+```
+
+### 2. Ejecutar y verificar
+La imagen está basada en Alpine y simplemente contiene los archivos en `/models`.
+```bash
+docker run --rm yolov9-models-frigate:latest ls -lh /models
+```
+
+### 3. Extraer modelos desde Docker (opcional)
+Si necesitas sacar un modelo específico de la imagen construida:
+```bash
+docker run --rm -v $(pwd):/output yolov9-models-frigate:latest cp /models/yolov9-s-320.onnx /output/
+```
+
+---
+
+## 🚀 Notas sobre el Hardware
+- **CPU / OpenVINO:** Recomendado usar los modelos de **320px** para menor latencia.
+- **GPU / TensorRT:** Los modelos de **640px** ofrecen la mejor precisión si tienes potencia suficiente.
