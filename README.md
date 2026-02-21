@@ -74,3 +74,33 @@ docker run --rm -v $(pwd):/output yolov9-models-frigate:latest cp /models/yolov9
 ## 🚀 Notas sobre el Hardware
 - **CPU / OpenVINO:** Recomendado usar los modelos de **320px** para menor latencia.
 - **GPU / TensorRT:** Los modelos de **640px** ofrecen la mejor precisión si tienes potencia suficiente.
+
+---
+
+## 🛠️ Herramienta de Conversión (YOLOv9 a ONNX)
+
+Si necesitas exportar tus propios modelos o resoluciones personalizadas, ahora incluimos un entorno de exportación completo en la carpeta `exporter/`.
+
+### 1. Construir la imagen de conversión
+```bash
+cd exporter
+docker build -t yolov9-exporter .
+```
+
+### 2. Exportar un modelo nuevo
+Este comando descarga automáticamente los pesos (.pt) de YOLOv9 y los convierte a ONNX:
+
+```bash
+# Ejemplo: Exportar YOLOv9-c con entrada de 416px
+docker run --rm -v $(pwd):/app/export yolov9-exporter \
+    --weights yolov9-c.pt \
+    --include onnx \
+    --imgsz 416 416
+```
+
+*El modelo resultante aparecerá en tu carpeta local `exporter/`.*
+
+### Características del Exportador:
+- Basado en **Python 3.10** y **PyTorch (CPU)**.
+- Incluye el parche necesario para cargar pesos en versiones modernas de PyTorch (`weights_only=False`).
+- Repositorio oficial de **WongKinYiu/yolov9** pre-instalado.
